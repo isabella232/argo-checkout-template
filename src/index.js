@@ -5,20 +5,8 @@
  *  2. Render - If requested by `ShouldRender`, will be rendered after checkout
  *     completes
  */
-
 import React from 'react';
-import {
-  extend,
-  render,
-  Text,
-  InputForRenderExtension,
-} from '@shopify/argo-checkout-react';
-
-/** Define any shape or type of data */
-interface Payload {
-  couldBe: 'anything' | 'everything';
-}
-
+import {extend, render, Text} from '@shopify/argo-checkout-react';
 /**
  * Entry point for the `ShouldRender` Extension Point.
  *
@@ -26,20 +14,18 @@ interface Payload {
  * optionally allows data to be stored on the client for use in the `Render`
  * extension point.
  */
-extend('Checkout::PostPurchase::ShouldRender', async ({storage}) => {
-  const {render, payload} = await getRenderData();
-  if (render) {
-    // Saves payload data, provided to `Render` via `storage.inputData`
-    await storage.update(payload);
+extend(
+  'Checkout::PostPurchase::ShouldRender',
+  async ({locale, extensionPoint, version}) => {
+    console.log({locale, extensionPoint, version});
+    return {
+      render: true,
+    };
   }
-  return {
-    render,
-  };
-});
-
+);
 // Simulate results of network call, etc.
 async function getRenderData() {
-  const payload: Payload = {
+  const payload = {
     couldBe: 'anything',
   };
   return {
@@ -47,7 +33,6 @@ async function getRenderData() {
     payload,
   };
 }
-
 /**
  * Entry point for the `Render` Extension Point
  *
@@ -58,16 +43,13 @@ async function getRenderData() {
 render('Checkout::PostPurchase::Render', (props) => (
   <PostPurchaseExtension {...props} />
 ));
-
 // Top-level React component
-function PostPurchaseExtension(
-  props: InputForRenderExtension<'Checkout::PostPurchase::Render'>
-) {
-  const payload = props.storage.initialData as Payload;
+function PostPurchaseExtension({locale, extensionPoint, version}) {
+  console.log({locale, extensionPoint, version});
   return (
     <Text>
-      Create your awesome post purchase page here. ShouldRender payload=
-      {JSON.stringify(payload)}
+      Create your awesome post purchase page here:{' '}
+      {JSON.stringify({locale, extensionPoint, version}, null, 2)}
     </Text>
   );
 }
